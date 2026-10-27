@@ -45,7 +45,8 @@ button:focus-visible,summary:focus-visible{outline:4px solid var(--plum);outline
 
 /* Top bar */
 .bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;align-items:center;gap:10px;padding-block:10px;background:var(--sky)}
-.brand{flex:1;display:flex;align-items:center;gap:8px;min-width:0;font-family:var(--display);font-weight:800;font-size:22px;line-height:1;white-space:nowrap;overflow:hidden}
+.brand{flex:1;display:flex;align-items:center;gap:8px;min-width:0;font-family:var(--display);font-weight:800;font-size:20px;line-height:1}
+.in-game .brand-name{display:none}
 .brand svg{width:40px;height:40px;flex:none}
 .icon-btn{width:48px;height:48px;border-radius:50%;border:0;background:var(--paper);box-shadow:0 4px 0 var(--blue-soft);display:grid;place-items:center;flex:none}
 .icon-btn svg{width:26px;height:26px}
@@ -85,7 +86,7 @@ main{flex:1;padding-block:6px 40px}
 .tile.jade{--c:var(--jade);--cs:var(--jade-soft);--cd:var(--jade-deep)}
 .tile.blue{--c:var(--blue);--cs:var(--blue-soft);--cd:var(--blue-deep)}
 .tile.gold{--c:var(--gold-deep);--cs:var(--gold-soft);--cd:var(--gold-deep)}
-.seal{display:inline-flex;align-items:center;justify-content:center;align-self:flex-start;background:var(--c);color:var(--paper);font-family:var(--han);font-weight:700;font-size:20px;letter-spacing:.06em;border-radius:12px;padding:4px 10px;line-height:1.3}
+.seal{display:inline-flex;align-items:center;justify-content:center;align-self:flex-start;background:var(--c,var(--red));color:var(--paper);font-family:var(--han);font-weight:700;font-size:20px;letter-spacing:.06em;border-radius:12px;padding:4px 10px;line-height:1.3}
 .tile .art{height:62px;display:flex;align-items:center;justify-content:center;margin-block:6px}
 .tile h3{margin:0;font-family:var(--display);font-weight:800;font-size:23px;line-height:1.05;text-wrap:balance}
 .tile .py{font-size:14px;color:var(--ink-soft);letter-spacing:.02em}
@@ -233,7 +234,7 @@ main{flex:1;padding-block:6px 40px}
     <button class="icon-btn" id="homeBtn" aria-label="Back to all games" hidden>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
     </button>
-    <div class="brand"><span data-panda></span><span>Little Panda Maths</span></div>
+    <div class="brand"><span data-panda></span><span class="brand-name">Little Panda Maths</span></div>
     <div class="stars" id="starBox" aria-label="Stars earned">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path class="pk" d="M12 2.5l2.9 6 6.6.8-4.9 4.6 1.3 6.6L12 17.2l-5.9 3.3 1.3-6.6L2.5 9.3l6.6-.8z"/></svg>
       <span id="starCount">0</span>
@@ -616,11 +617,11 @@ function play(){stopFill();current.round()}
 function setTip(){$('#gTip').textContent=current.tip+' '+current.levels[level]}
 document.querySelectorAll('.tile').forEach(t=>t.onclick=()=>{
   sfx.click();current=GAMES[t.dataset.game];lastPick=null;
-  $('#gSeal').textContent=current.han;$('#gTitle').textContent=current.title;$('#gPy').textContent=current.py;setTip();
+  $('#gSeal').textContent=current.han;$('#gSeal').style.setProperty('--c',getComputedStyle(t).getPropertyValue('--c'));document.body.classList.add('in-game');$('#gTitle').textContent=current.title;$('#gPy').textContent=current.py;setTip();
   home.hidden=true;game.hidden=false;homeBtn.hidden=false;window.scrollTo(0,0);
   play();
 });
-homeBtn.onclick=()=>{sfx.click();stopFill();try{speechSynthesis.cancel()}catch(e){}game.hidden=true;home.hidden=false;homeBtn.hidden=true;window.scrollTo(0,0)};
+homeBtn.onclick=()=>{sfx.click();stopFill();try{speechSynthesis.cancel()}catch(e){}game.hidden=true;home.hidden=false;homeBtn.hidden=true;document.body.classList.remove('in-game');window.scrollTo(0,0)};
 
 /* ---------- difficulty ---------- */
 const LEVEL_SAY={easy:'Easy! Little numbers and lots of dots.',medium:'Medium! A bit trickier.',hard:'Hard! Big numbers. You can do it!'};
