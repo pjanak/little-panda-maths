@@ -64,6 +64,15 @@ main{flex:1;padding-block:6px 40px}
 .bubble{position:relative;background:var(--paper);border-radius:22px;padding:12px 16px;font-size:19px;box-shadow:0 5px 0 var(--blue-soft);min-width:0}
 .bubble::before{content:"";position:absolute;left:-10px;top:50%;margin-top:-10px;border:10px solid transparent;border-right-color:var(--paper);border-left:0}
 .bubble b{font-family:var(--display);font-size:22px;display:block;line-height:1.1}
+.levels{display:flex;align-items:center;gap:6px;background:var(--paper);border-radius:22px;padding:6px;box-shadow:0 5px 0 var(--blue-soft)}
+.lv-label{font-family:var(--display);font-weight:800;font-size:17px;line-height:1.1;padding-inline:8px 4px;flex:none}
+.lv{flex:1;min-width:0;border:0;border-radius:16px;padding:6px 4px;background:transparent;color:var(--ink-soft);font-family:var(--display);font-weight:800;font-size:18px;line-height:1.05;display:flex;flex-direction:column;align-items:center}
+.lv i{font-style:normal;font-size:13px;color:var(--gold-deep);letter-spacing:1px}
+.lv[aria-pressed="true"]{color:var(--paper)}
+.lv[aria-pressed="true"] i{color:var(--gold)}
+.lv[data-level="easy"][aria-pressed="true"]{background:var(--jade)}
+.lv[data-level="medium"][aria-pressed="true"]{background:var(--blue)}
+.lv[data-level="hard"][aria-pressed="true"]{background:var(--red)}
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .tile{
   --c:var(--red);--cs:var(--red-soft);--cd:var(--red-deep);
@@ -240,6 +249,7 @@ main{flex:1;padding-block:6px 40px}
         <button class="panda-btn" id="pandaBtn" aria-label="Say hello to Bao the panda"><span data-panda></span></button>
         <div class="bubble"><b>Hi, I'm Bao!</b>Pick a game. Let's do maths the Chinese way!</div>
       </div>
+      <div class="levels" role="group" aria-label="How tricky"><span class="lv-label">How<br>tricky?</span><button class="lv" data-level="easy" aria-pressed="true">Easy<i>★</i></button><button class="lv" data-level="medium" aria-pressed="false">Medium<i>★★</i></button><button class="lv" data-level="hard" aria-pressed="false">Hard<i>★★★</i></button></div>
 
       <div class="tiles">
         <button class="tile" data-game="bonds">
@@ -281,12 +291,14 @@ main{flex:1;padding-block:6px 40px}
           <li><span class="zh">凑十法</span> <b>Make ten.</b> To work out 8 + 5, take 2 from the 5 to fill the 8 up to 10, then add what is left: 10 + 3 = 13. This replaces counting on one by one.</li>
           <li><span class="zh">算盘</span> <b>Abacus.</b> A top bead is worth 5 and each bottom bead is worth 1, so 7 is seen as 5 and 2. The traditional suanpan has 2 top and 5 bottom beads per rod; this game uses the simpler 1 and 4 school abacus.</li>
         </ul>
+        <p><b>How tricky?</b> Easy uses small numbers and lots of dots to count. Medium covers numbers to 10 and adding to 18. Hard takes away the counting help, uses teen numbers, and makes children work out each step themselves. The level applies to every game and can be changed at any time.</p>
         <p>Stars are saved on this device only. There are no wrong-answer penalties: a wrong tap just fades that choice.</p>
       </details>
     </section>
 
     <section class="screen" id="game" hidden>
       <div class="game-head"><span class="seal" id="gSeal"></span><div><h2 id="gTitle"></h2><small id="gPy"></small></div></div>
+      <div class="levels" role="group" aria-label="How tricky"><span class="lv-label">How<br>tricky?</span><button class="lv" data-level="easy" aria-pressed="true">Easy<i>★</i></button><button class="lv" data-level="medium" aria-pressed="false">Medium<i>★★</i></button><button class="lv" data-level="hard" aria-pressed="false">Hard<i>★★★</i></button></div>
       <div class="prompt">
         <button class="say-btn" id="sayBtn" aria-label="Read the question aloud">
           <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4z" fill="#fff"/><path d="M16.5 8.5a5 5 0 010 7M19 6a8.5 8.5 0 010 12"/></svg>
@@ -317,8 +329,9 @@ const PANDA='<svg class="panda" viewBox="0 0 120 120" aria-hidden="true"><circle
 document.querySelectorAll('[data-panda]').forEach(el=>el.outerHTML=PANDA);
 
 /* ---------- state ---------- */
-let stars=0, soundOn=true;
+let stars=0, soundOn=true, level='easy';
 try{stars=parseInt(localStorage.getItem('lpm-stars'),10)||0}catch(e){}
+try{const l=localStorage.getItem('lpm-level');if(['easy','medium','hard'].includes(l))level=l}catch(e){}
 try{soundOn=localStorage.getItem('lpm-sound')!=='off'}catch(e){}
 const starCount=$('#starCount'), starBox=$('#starBox');
 function showStars(){starCount.textContent=stars}
@@ -384,12 +397,16 @@ function fresh(fn){let v,g=0;do{v=fn()}while(v===lastPick&&g++<10);lastPick=v;re
 function setPrompt(text,speech){promptText.textContent=text;spoken=speech||text;say(spoken)}
 $('#sayBtn').onclick=()=>say(spoken);
 
-function ask(opts,right,onRight){
+/* final=false marks a step inside a longer question: no star until the last step */
+function ask(opts,right,onRight,final=true){
   answers.innerHTML='';
   opts.forEach(v=>{
     const b=document.createElement('button');b.className='ans';b.textContent=v;
     b.onclick=()=>{
-      if(v===right){b.classList.add('right');[...answers.children].forEach(x=>x.disabled=true);win(onRight)}
+      if(v===right){
+        b.classList.add('right');[...answers.children].forEach(x=>x.disabled=true);
+        if(final)win(onRight);else{[0,2,4].forEach((n,i)=>tone(PENTA[n],.2,'triangle',i*.08));onRight()}
+      }
       else{b.classList.add('wrong');b.disabled=true;sfx.oops();say('Oops! Try again.')}
     };
     answers.appendChild(b);
@@ -407,18 +424,20 @@ function win(after){
 function showNext(){
   answers.innerHTML='';
   const b=document.createElement('button');b.className='next';b.innerHTML='Next <span aria-hidden="true">&#10140;</span>';
-  b.onclick=()=>{b.disabled=true;sfx.click();current.round()};
+  b.onclick=()=>{b.disabled=true;sfx.click();play()};
   answers.appendChild(b);
 }
-const tf=(on,color)=>Array.from({length:10},(_,i)=>i<on?`<div class="cell on"><span class="dot ${color}"></span></div>`:'<div class="cell"></div>').join('');
+const tf=(on,color,total=10)=>Array.from({length:total},(_,i)=>i<on?`<div class="cell on"><span class="dot ${color}"></span></div>`:'<div class="cell"></div>').join('');
+let fillTimers=[];
+function stopFill(){fillTimers.forEach(clearTimeout);fillTimers=[]}
 function fillEmpties(frame,color,numbers,done){
   const empty=[...frame.querySelectorAll('.cell:not(.on)')];
-  empty.forEach((c,i)=>setTimeout(()=>{
+  empty.forEach((c,i)=>fillTimers.push(setTimeout(()=>{
     c.classList.add('on');
     c.innerHTML=`<span class="dot ${color} pop"></span>`+(numbers?`<span class="n">${i+1}</span>`:'');
     sfx.note(i);
-    if(i===empty.length-1&&done)setTimeout(done,300);
-  },i*420));
+    if(i===empty.length-1&&done)fillTimers.push(setTimeout(done,300));
+  },i*420)));
   if(!empty.length&&done)done();
 }
 
@@ -427,89 +446,116 @@ const GAMES={
   bonds:{
     title:'Split & Join',han:'分与合',py:'fēn yǔ hé',
     tip:'The big top circle is the whole number. The two circles below are its parts. Together the parts make the whole. Children in China learn every split of 2 to 10 this way before they add or take away.',
+    levels:{easy:'Easy: numbers 2 to 5, with dots to count.',medium:'Medium: numbers 3 to 10. Sometimes the whole is missing instead of a part.',hard:'Hard: numbers 8 to 20 with no dots. Teen numbers often split into 10 and the rest (17 is 10 and 7), which gets children ready for subtracting past 10.'},
     round(){
-      const n=fresh(()=>rand(3,10)),a=rand(1,n-1),b=n-a;
-      const askWhole=stars>=5&&Math.random()<.3;
-      const dots=k=>'<span class="mini">'+'<i></i>'.repeat(k)+'</span>';
+      const L={easy:{lo:2,hi:5,whole:0,dots:true},medium:{lo:3,hi:10,whole:.3,dots:true},hard:{lo:8,hi:20,whole:.4,dots:false}}[level];
+      const n=fresh(()=>rand(L.lo,L.hi)),a=n>10&&Math.random()<.5?10:rand(1,n-1),b=n-a;
+      const askWhole=Math.random()<L.whole;
+      const dots=k=>L.dots?'<span class="mini">'+'<i></i>'.repeat(k)+'</span>':'';
       const ball=(pos,v,hide)=>hide?`<div class="ball ${pos} q" id="qBall"><b>?</b></div>`:`<div class="ball ${pos}"><b>${v}</b>${dots(v)}</div>`;
       stage.innerHTML=`<div class="bond"><svg viewBox="0 0 340 260" preserveAspectRatio="none" aria-hidden="true"><line x1="170" y1="70" x2="70" y2="190"/><line x1="170" y1="70" x2="270" y2="190"/></svg>${ball('top',n,askWhole)}${ball('left',a)}${ball('right',b,!askWhole)}</div>`;
       const reveal=()=>{const q=$('#qBall');const v=askWhole?n:b;q.classList.remove('q');q.classList.add('filled');q.innerHTML=`<b>${v}</b>${dots(v)}`;stage.insertAdjacentHTML('beforeend',`<p class="say-line">${a} and ${b} make ${n}</p>`);say(`Yes! ${a} and ${b} make ${n}.`)};
       if(askWhole){
         setPrompt(`${a} and ${b} join together. What do they make?`);
-        ask(choices(n,2,10),n,reveal);
+        ask(choices(n,2,L.hi),n,reveal);
       }else{
         setPrompt(`${n} splits into ${a} and ...?`,`${n} can split into ${a} and how many more?`);
-        ask(choices(b,1,9),b,reveal);
+        ask(choices(b,1,L.hi-1),b,reveal);
       }
     }
   },
   friends:{
     title:'Ten Friends',han:'凑十',py:'còu shí',
     tip:'Two numbers that make 10 are "ten friends": 1 and 9, 2 and 8, 3 and 7, 4 and 6, 5 and 5. Knowing them by heart is the key to the Make Ten adding trick. Tap "Show me" to count the empty boxes together.',
+    levels:{easy:'Easy: five friends first. The box has 5 spaces, so the pairs make 5 (2 and 3, 4 and 1).',medium:'Medium: pairs that make 10, with the dots shown.',hard:'Hard: just the numbers, written as a sum like 7 + ? = 10. Tap "Show me" to see the dots.'},
     round(){
-      const k=fresh(()=>rand(1,9)),need=10-k;
-      stage.innerHTML=`<div class="frame" id="fFrame">${tf(k,'red')}</div><button class="show-me" id="showMe">Show me</button>`;
-      setPrompt(`There are ${k} red dots. How many more make 10?`,`Here are ${k} red dots. How many more do we need to make ten?`);
-      $('#showMe').onclick=e=>{e.target.disabled=true;say('Let\'s count the empty boxes.');fillEmpties($('#fFrame'),'ghost',true)};
-      ask(choices(need,1,9),need,()=>{
-        const fr=$('#fFrame');fr.querySelectorAll('.dot.ghost').forEach(d=>d.parentNode.innerHTML='');fr.querySelectorAll('.cell').forEach((c,i)=>{if(i>=k)c.classList.remove('on')});
+      const total=level==='easy'?5:10,hard=level==='hard',word=total===5?'five':'ten';
+      const k=fresh(()=>rand(1,total-1)),need=total-k;
+      stage.innerHTML=(hard?`<div class="sum-line"><span class="r">${k}</span>+<span class="q" id="fQ">?</span>=<span>10</span></div>`:'')
+        +`<div class="frame" id="fFrame"${hard?' hidden':''}>${tf(k,'red',total)}</div><button class="show-me" id="showMe">Show me</button>`;
+      if(hard)setPrompt(`${k} and what make 10?`,`${k} plus what makes ten?`);
+      else setPrompt(`There are ${k} red dots. How many more make ${total}?`,`Here are ${k} red dots. How many more do we need to make ${word}?`);
+      $('#showMe').onclick=e=>{e.target.disabled=true;$('#fFrame').hidden=false;say('Let\'s count the empty boxes.');fillEmpties($('#fFrame'),'ghost',true)};
+      ask(choices(need,1,total-1),need,()=>{
+        stopFill();const fr=$('#fFrame');fr.hidden=false;
+        fr.querySelectorAll('.dot.ghost').forEach(d=>d.parentNode.innerHTML='');fr.querySelectorAll('.cell').forEach((c,i)=>{if(i>=k)c.classList.remove('on')});
         $('#showMe').remove();
-        fillEmpties(fr,'jade',false,()=>{stage.insertAdjacentHTML('beforeend',`<p class="say-line">${k} and ${need} make 10</p>`)});
-        say(`Yes! ${k} and ${need} are ten friends!`);
+        if(hard){const q=$('#fQ');q.textContent=need;q.classList.add('ok')}
+        fillEmpties(fr,'jade',false,()=>{stage.insertAdjacentHTML('beforeend',`<p class="say-line">${k} and ${need} make ${total}</p>`)});
+        say(`Yes! ${k} and ${need} are ${word} friends!`);
       });
     }
   },
   maketen:{
     title:'Make Ten to Add',han:'凑十法',py:'còu shí fǎ',
     tip:'To add 8 + 5, we fill the ten box first. 8 needs 2 more to make 10, so we split 5 into 2 and 3. Now it is easy: 10 and 3 make 13. This is how children in China learn to add past 10 without counting on their fingers.',
+    levels:{easy:'Easy: start from 8 or 9, so only 1 or 2 dots jump in, and answers stay between 11 and 13.',medium:'Medium: start from 6 to 9 and tap the dots to fill the box.',hard:'Hard: no tapping. Children work out each step themselves: how many make 10, how the second number splits, then the total.'},
     round(){
-      const a=fresh(()=>rand(6,9)),b=rand(11-a,9),need=10-a,rest=b-need,sum=a+b;
+      const hard=level==='hard';
+      const a=fresh(()=>level==='easy'?rand(8,9):hard?rand(5,9):rand(6,9));
+      const b=level==='easy'?rand(11-a,13-a):rand(11-a,9),need=10-a,rest=b-need,sum=a+b;
       stage.innerHTML=`<div class="sum-line"><span class="r">${a}</span>+<span class="b">${b}</span>=<span class="q" id="sumQ">?</span></div>
         <div class="frame" id="mFrame">${tf(a,'red')}</div>
-        <div class="pile-wrap"><p class="cap">Tap a blue dot to jump into the box</p><div class="pile" id="pile">${'<button class="pdot" aria-label="Blue dot"></button>'.repeat(b)}</div></div>
+        <div class="pile-wrap"><p class="cap">${hard?`${b} blue dots`:'Tap a blue dot to jump into the box'}</p><div class="pile${hard?' done':''}" id="pile">${`<button class="pdot" aria-label="Blue dot"${hard?' disabled':''}></button>`.repeat(b)}</div></div>
         <div id="splitBox"></div>`;
       answers.innerHTML='';
-      setPrompt(`${a} + ${b}. Fill up the box to make 10 first!`,`${a} plus ${b}. Let's make ten first! Tap the blue dots to fill up the box.`);
       const frame=$('#mFrame'),pile=$('#pile');let moved=0;
-      pile.querySelectorAll('.pdot').forEach(d=>d.onclick=()=>{
-        if(moved>=need)return;
+      const jump=d=>{
         d.disabled=true;d.classList.add('gone');setTimeout(()=>d.remove(),260);
         const cell=frame.querySelector('.cell:not(.on)');
         cell.classList.add('on');cell.innerHTML='<span class="dot blue pop"></span>';
         sfx.note(a+moved-5);moved++;
-        if(moved===need){
-          pile.classList.add('done');
-          pile.parentNode.querySelector('.cap').textContent=`${rest} blue dot${rest>1?'s':''} left over`;
+      };
+      const askSum=()=>{
+        setPrompt(`The box is full! 10 and ${rest} more make ...?`,`The box is full, that's ten! ${b} split into ${need} and ${rest}. Ten and ${rest} more makes how many?`);
+        ask(choices(sum,11,18),sum,()=>{const q=$('#sumQ');q.textContent=sum;q.classList.add('ok');say(`Yes! ${a} plus ${b} is ${sum}. Ten and ${rest} make ${sum}.`)});
+      };
+      const full=()=>{
+        pile.classList.add('done');
+        pile.parentNode.querySelector('.cap').textContent=`${rest} blue dot${rest>1?'s':''} left over`;
+        if(hard){
+          $('#splitBox').outerHTML=`<div class="split"><span class="chip b">${b}</span> is <span class="chip g">${need}</span> and <span class="chip j" id="restQ">?</span></div>`;
+          setPrompt(`${b} splits into ${need} and ...?`,`The box is full! ${b} splits into ${need} and how many?`);
+          ask(choices(rest,1,8),rest,()=>{$('#restQ').textContent=rest;setTimeout(askSum,600)},false);
+        }else{
           $('#splitBox').outerHTML=`<div class="split"><span class="chip b">${b}</span> is <span class="chip g">${need}</span> and <span class="chip j">${rest}</span></div>`;
-          setTimeout(()=>{
-            setPrompt(`The box is full! 10 and ${rest} more make ...?`,`The box is full, that's ten! ${b} split into ${need} and ${rest}. Ten and ${rest} more makes how many?`);
-            ask(choices(sum,11,18),sum,()=>{const q=$('#sumQ');q.textContent=sum;q.classList.add('ok');say(`Yes! ${a} plus ${b} is ${sum}. Ten and ${rest} make ${sum}.`)});
-          },500);
+          setTimeout(askSum,500);
         }
-      });
+      };
+      if(hard){
+        setPrompt(`${a} + ${b}. How many more does ${a} need to make 10?`,`${a} plus ${b}. First, how many more does ${a} need to make ten?`);
+        ask(choices(need,1,5),need,()=>{
+          answers.innerHTML='';
+          [...pile.querySelectorAll('.pdot')].slice(0,need).forEach((d,i)=>fillTimers.push(setTimeout(()=>{jump(d);if(i===need-1)fillTimers.push(setTimeout(full,500))},i*450)));
+        },false);
+      }else{
+        setPrompt(`${a} + ${b}. Fill up the box to make 10 first!`,`${a} plus ${b}. Let's make ten first! Tap the blue dots to fill up the box.`);
+        pile.querySelectorAll('.pdot').forEach(d=>d.onclick=()=>{if(moved>=need)return;jump(d);if(moved===need)full()});
+      }
     }
   },
   abacus:{
     title:'Bead Abacus',han:'算盘',py:'suàn pán',
     tip:'Beads count when they are pushed to the middle bar. The gold top bead is worth 5. Each bottom bead is worth 1. The right rod is ones and the left rod is tens, so 13 is one bottom bead on the tens rod and three on the ones rod. Tap a bead to move it.',
+    levels:{easy:'Easy: numbers 1 to 9, on the ones rod only.',medium:'Medium: numbers 1 to 20, using the tens rod too.',hard:'Hard: numbers 10 to 99, and the abacus no longer shows its number, so children read the beads themselves.'},
     rods:[{h:0,e:0},{h:0,e:0}],
     value(){return this.rods.reduce((s,r)=>s*10+r.h*5+r.e,0)},
     layout(){
-      document.querySelectorAll('#abacus .rod').forEach((el,i)=>{
-        const r=this.rods[i];
+      document.querySelectorAll('#abacus .rod').forEach(el=>{
+        const r=this.rods[+el.dataset.i];
         el.querySelector('.bead.h').style.setProperty('--pos',r.h?1:0);
         el.querySelectorAll('.earth .bead').forEach((b,j)=>b.style.setProperty('--pos',j<r.e?j:j+1));
       });
       $('#abVal').textContent=this.value();
     },
     round(){
-      const max=stars<10?9:stars<25?20:50;
-      const t=fresh(()=>rand(1,max));
+      const R={easy:[1,9],medium:[1,20],hard:[10,99]}[level],hard=level==='hard';
+      const t=fresh(()=>rand(R[0],R[1]));
       this.rods=[{h:0,e:0},{h:0,e:0}];
       const rod=i=>`<div class="rod" data-i="${i}"><div class="heaven"><button class="bead h" data-k="h" aria-label="${i?'Ones':'Tens'} five bead"></button></div><div class="beam"></div><div class="earth">${[0,1,2,3].map(j=>`<button class="bead" data-k="${j}" aria-label="${i?'Ones':'Tens'} one bead"></button>`).join('')}</div><div class="rod-label">${i?'ones':'tens'}</div></div>`;
-      stage.innerHTML=`<div class="abacus" id="abacus">${rod(0)}${rod(1)}</div>
+      stage.innerHTML=`<div class="abacus" id="abacus">${level==='easy'?'':rod(0)}${rod(1)}</div>
         <div class="legend"><span><i class="h"></i> top bead = 5</span><span><i></i> bottom bead = 1</span></div>
-        <p class="ab-read">Your abacus shows <b id="abVal">0</b></p><div id="hintBox"></div>`;
+        <p class="ab-read"${hard?' hidden':''}>Your abacus shows <b id="abVal">0</b></p><div id="hintBox"></div>`;
       this.layout();
       $('#abacus').onclick=e=>{
         const bead=e.target.closest('.bead');if(!bead)return;
@@ -526,7 +572,7 @@ const GAMES={
       check.onclick=()=>{
         const v=this.value();
         if(v===t){check.classList.add('right');help.disabled=check.disabled=true;$('#abacus').onclick=null;win(()=>say(`Yes! That's ${t}!`))}
-        else{check.classList.remove('wrong');void check.offsetWidth;check.classList.add('wrong');setTimeout(()=>check.classList.remove('wrong'),450);sfx.oops();say(`Your abacus shows ${v}. We need ${t}. Try again!`)}
+        else{check.classList.remove('wrong');void check.offsetWidth;check.classList.add('wrong');setTimeout(()=>check.classList.remove('wrong'),450);sfx.oops();say(hard?'Not quite! Count the beads on each rod again.':`Your abacus shows ${v}. We need ${t}. Try again!`)}
       };
       help.onclick=()=>{const h=hint();$('#hintBox').outerHTML=`<p class="hint-box" id="hintBox">${h}</p>`;say(h)};
       answers.append(check,help);
@@ -536,13 +582,28 @@ const GAMES={
 
 /* ---------- navigation ---------- */
 const home=$('#home'),game=$('#game'),homeBtn=$('#homeBtn');
+function play(){stopFill();current.round()}
+function setTip(){$('#gTip').textContent=current.tip+' '+current.levels[level]}
 document.querySelectorAll('.tile').forEach(t=>t.onclick=()=>{
   sfx.click();current=GAMES[t.dataset.game];lastPick=null;
-  $('#gSeal').textContent=current.han;$('#gTitle').textContent=current.title;$('#gPy').textContent=current.py;$('#gTip').textContent=current.tip;
+  $('#gSeal').textContent=current.han;$('#gTitle').textContent=current.title;$('#gPy').textContent=current.py;setTip();
   home.hidden=true;game.hidden=false;homeBtn.hidden=false;window.scrollTo(0,0);
-  current.round();
+  play();
 });
-homeBtn.onclick=()=>{sfx.click();try{speechSynthesis.cancel()}catch(e){}game.hidden=true;home.hidden=false;homeBtn.hidden=true;window.scrollTo(0,0)};
+homeBtn.onclick=()=>{sfx.click();stopFill();try{speechSynthesis.cancel()}catch(e){}game.hidden=true;home.hidden=false;homeBtn.hidden=true;window.scrollTo(0,0)};
+
+/* ---------- difficulty ---------- */
+const LEVEL_SAY={easy:'Easy! Little numbers and lots of dots.',medium:'Medium! A bit trickier.',hard:'Hard! Big numbers. You can do it!'};
+function showLevel(){document.querySelectorAll('.lv').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.level===level)))}
+showLevel();
+document.querySelectorAll('.lv').forEach(b=>b.onclick=()=>{
+  if(b.dataset.level===level)return;
+  level=b.dataset.level;
+  try{localStorage.setItem('lpm-level',level)}catch(e){}
+  showLevel();sfx.click();
+  if(game.hidden)say(LEVEL_SAY[level]);
+  else{lastPick=null;setTip();play()}
+});
 $('#pandaBtn').onclick=e=>{const b=e.currentTarget;b.classList.remove('wiggle');void b.offsetWidth;b.classList.add('wiggle');sfx.yay();say(stars?`Hi, I'm Bao! You have ${stars} star${stars>1?'s':''}. Pick a game!`:"Hi, I'm Bao the panda! Pick a game and let's do maths the Chinese way!")};
 
 /* ---------- cheer + confetti ---------- */
