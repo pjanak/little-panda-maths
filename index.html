@@ -19,7 +19,7 @@
   --jade:#12A582; --jade-soft:#D2F4E9; --jade-deep:#0B7A60;
   --blue:#2F86EB; --blue-soft:#DAEAFF; --blue-deep:#1C62B8;
   --plum:#7C4DEB; --plum-soft:#EAE1FF; --plum-deep:#5932B8;
-  --cheek:#FF8FB5; --wood:#C27C3E; --wood-dark:#7B4A22;
+  --cheek:#FF8FB5; --peach:#FF7FA6; --peach-deep:#D04A78; --wood:#C27C3E; --wood-dark:#7B4A22;
   --display:"Baloo 2","Arial Rounded MT Bold","Trebuchet MS",system-ui,sans-serif;
   --body:"Andika","Comic Sans MS","Trebuchet MS",system-ui,sans-serif;
   --han:"PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei",sans-serif;
@@ -86,6 +86,8 @@ main{flex:1;padding-block:6px 40px}
 .tile.jade{--c:var(--jade);--cs:var(--jade-soft);--cd:var(--jade-deep)}
 .tile.blue{--c:var(--blue);--cs:var(--blue-soft);--cd:var(--blue-deep)}
 .tile.gold{--c:var(--gold-deep);--cs:var(--gold-soft);--cd:var(--gold-deep)}
+.tile.plum{--c:var(--plum);--cs:var(--plum-soft);--cd:var(--plum-deep)}
+.section-h{margin:4px 0 -4px;font-family:var(--display);font-weight:800;font-size:21px;line-height:1.1}
 .seal{display:inline-flex;align-items:center;justify-content:center;align-self:flex-start;background:var(--c,var(--red));color:var(--paper);font-family:var(--han);font-weight:700;font-size:20px;letter-spacing:.06em;border-radius:12px;padding:4px 10px;line-height:1.3}
 .tile .art{height:62px;display:flex;align-items:center;justify-content:center;margin-block:6px}
 .tile h3{margin:0;font-family:var(--display);font-weight:800;font-size:23px;line-height:1.05;text-wrap:balance}
@@ -111,6 +113,16 @@ main{flex:1;padding-block:6px 40px}
 .art-abacus i{width:22px;height:9px;border-radius:50%;background:var(--red)}
 .art-abacus i.f{background:var(--gold)}
 .art-abacus hr{width:30px;height:4px;margin:1px 0;border:0;background:var(--wood-dark)}
+.art-frame i.x{background:var(--plum);opacity:.25}
+.art-sum.red{color:var(--red-deep)} .art-sum.red span{color:var(--blue)}
+.art-plates{display:flex;gap:6px}
+.art-plates span{width:30px;height:30px;border-radius:50%;background:var(--paper);box-shadow:inset 0 0 0 3px var(--jade);display:flex;align-items:center;justify-content:center;gap:2px}
+.art-plates i{width:7px;height:7px;border-radius:50%;background:var(--gold)}
+.art-share{display:flex;gap:10px;align-items:flex-end}
+.art-share span{display:flex;flex-direction:column;align-items:center;gap:3px}
+.art-share svg{width:34px;height:34px}
+.art-share b{display:flex;gap:2px}
+.art-share i{width:9px;height:9px;border-radius:50%;background:var(--peach)}
 
 .grown{background:var(--paper);border-radius:20px;padding:4px 16px;font-size:16px;color:var(--ink-soft)}
 .grown summary{font-family:var(--display);font-weight:800;font-size:18px;color:var(--ink);padding-block:10px;cursor:pointer}
@@ -147,7 +159,27 @@ main{flex:1;padding-block:6px 40px}
 .cell{aspect-ratio:1;border-radius:12px;background:var(--sky);display:grid;place-items:center;position:relative}
 .cell .n{position:absolute;font-family:var(--display);font-weight:800;font-size:22px;color:var(--blue-deep)}
 .dot{display:block;width:76%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 34% 30%,rgba(255,255,255,.65) 0 14%,transparent 16%),var(--dc,var(--red))}
-.dot.red{--dc:var(--red)} .dot.blue{--dc:var(--blue)} .dot.jade{--dc:var(--jade)}
+.dot.red{--dc:var(--red)} .dot.blue{--dc:var(--blue)} .dot.jade{--dc:var(--jade)} .dot.gold{--dc:var(--gold)}
+.frame.tap .cell.on:not(.out){cursor:pointer}
+.cell.out .dot{opacity:.3}
+.cell.out::after{content:"";position:absolute;inset:14%;background:linear-gradient(45deg,transparent 42%,var(--ink) 42% 58%,transparent 58%),linear-gradient(-45deg,transparent 42%,var(--ink) 42% 58%,transparent 58%);animation:pop .3s cubic-bezier(.3,1.7,.5,1)}
+.plates{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;width:min(100%,340px)}
+.plate{position:relative;width:96px;height:96px;border-radius:50%;border:0;padding:14px;box-sizing:border-box;background:var(--paper);box-shadow:0 5px 0 var(--blue-soft),inset 0 0 0 6px var(--sky);display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:4px}
+.plate i{width:14px;height:14px;border-radius:50%;background:var(--gold);box-shadow:inset 0 -2px 0 var(--gold-deep)}
+.plate.many i{width:11px;height:11px}
+.plate.counted{box-shadow:0 5px 0 var(--jade-deep),inset 0 0 0 6px var(--jade)}
+.tally{position:absolute;top:-8px;right:-8px;min-width:36px;height:36px;padding:0 6px;box-sizing:border-box;border-radius:18px;background:var(--jade);color:var(--paper);font-family:var(--display);font-weight:800;font-size:21px;line-height:1;display:grid;place-items:center}
+.rhyme{margin:0;background:var(--red-soft);border-radius:16px;padding:8px 14px;font-size:17px;text-align:center;animation:rise .4s ease-out}
+.rhyme .zh{font-family:var(--han);font-weight:700;font-size:24px;color:var(--red);letter-spacing:.08em;margin-right:6px}
+.pdot.peach{background:radial-gradient(circle at 34% 30%,rgba(255,255,255,.65) 0 14%,transparent 16%),var(--peach);box-shadow:0 4px 0 var(--peach-deep)}
+.pile.small .pdot{width:40px;height:40px}
+.pandas{display:grid;gap:8px;width:min(100%,340px)}
+.pal{background:var(--paper);border-radius:18px;padding:6px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:0 4px 0 var(--blue-soft);min-width:0}
+.pal.turn{box-shadow:0 4px 0 var(--jade-deep),inset 0 0 0 3px var(--jade)}
+.pal svg{width:46px;height:46px}
+.basket{display:flex;flex-wrap:wrap;justify-content:center;gap:3px;min-height:16px;width:100%}
+.basket i{width:13px;height:13px;border-radius:50%;background:var(--peach)}
+.pal .cnt{font-family:var(--display);font-weight:800;font-size:22px;line-height:1}
 .dot.ghost{background:transparent;border:4px dashed var(--blue);box-sizing:border-box}
 .pop{animation:pop .4s cubic-bezier(.3,1.7,.5,1)}
 .pile-wrap{display:flex;flex-direction:column;align-items:center;gap:6px;width:min(100%,330px)}
@@ -252,6 +284,7 @@ main{flex:1;padding-block:6px 40px}
       </div>
       <div class="levels" role="group" aria-label="How tricky"><span class="lv-label">How<br>tricky?</span><button class="lv" data-level="easy" aria-pressed="true">Easy<i>★</i></button><button class="lv" data-level="medium" aria-pressed="false">Medium<i>★★</i></button><button class="lv" data-level="hard" aria-pressed="false">Hard<i>★★★</i></button></div>
 
+      <h2 class="section-h">Numbers and adding</h2>
       <div class="tiles">
         <button class="tile" data-game="bonds">
           <span class="seal">分与合</span>
@@ -283,6 +316,38 @@ main{flex:1;padding-block:6px 40px}
         </button>
       </div>
 
+      <h2 class="section-h">Take away, times and sharing</h2>
+      <div class="tiles">
+        <button class="tile plum" data-game="take">
+          <span class="seal">减法</span>
+          <span class="art"><span class="art-frame"><i class="r"></i><i class="r"></i><i class="r"></i><i class="r"></i><i class="r"></i><i class="x"></i><i class="x"></i><i class="x"></i><i></i><i></i></span></span>
+          <h3>Take Away</h3>
+          <span class="py">jiǎn fǎ</span>
+          <p>Some go away. How many are left?</p>
+        </button>
+        <button class="tile" data-game="breakten">
+          <span class="seal">破十法</span>
+          <span class="art"><span class="art-sum red">13<span>−</span>5</span></span>
+          <h3>Break Ten</h3>
+          <span class="py">pò shí fǎ</span>
+          <p>Take away from the ten, then add the rest</p>
+        </button>
+        <button class="tile jade" data-game="groups">
+          <span class="seal">几个几</span>
+          <span class="art"><span class="art-plates"><span><i></i><i></i></span><span><i></i><i></i></span><span><i></i><i></i></span></span></span>
+          <h3>Equal Groups</h3>
+          <span class="py">jǐ gè jǐ</span>
+          <p>Times is adding equal groups</p>
+        </button>
+        <button class="tile blue" data-game="share">
+          <span class="seal">平均分</span>
+          <span class="art"><span class="art-share"><span><span data-panda></span><b><i></i><i></i><i></i></b></span><span><span data-panda></span><b><i></i><i></i><i></i></b></span></span></span>
+          <h3>Share Fairly</h3>
+          <span class="py">píng jūn fēn</span>
+          <p>Sharing out evenly is dividing</p>
+        </button>
+      </div>
+
       <details class="grown">
         <summary>For grown-ups: the Chinese methods</summary>
         <p>Children in Chinese Year 1 classrooms build mental maths on a few clear ideas. Each game here practises one of them. Tap the green speaker to hear any question read aloud.</p>
@@ -291,6 +356,10 @@ main{flex:1;padding-block:6px 40px}
           <li><span class="zh">凑十</span> <b>Ten friends.</b> The pairs that make 10: 1 and 9, 2 and 8, and so on. These are the backbone of everything that follows.</li>
           <li><span class="zh">凑十法</span> <b>Make ten.</b> To work out 8 + 5, take 2 from the 5 to fill the 8 up to 10, then add what is left: 10 + 3 = 13. This replaces counting on one by one.</li>
           <li><span class="zh">算盘</span> <b>Abacus.</b> A top bead is worth 5 and each bottom bead is worth 1, so 7 is seen as 5 and 2. The traditional suanpan has 2 top and 5 bottom beads per rod; this game uses the simpler 1 and 4 school abacus.</li>
+          <li><span class="zh">想加算减</span> <b>Think adding to take away.</b> For 8 − 3, children ask "3 and what make 8?" and use the number bonds they already know. Take Away uses this on Hard.</li>
+          <li><span class="zh">破十法</span> <b>Break ten.</b> For 13 − 5 there are only 3 ones, so take the 5 from the ten instead: 10 − 5 = 5, then add the 3 ones back to get 8. This is the partner of Make Ten.</li>
+          <li><span class="zh">几个几</span> <b>Groups of.</b> Multiplying starts as "how many groups of how many": 3 groups of 5 is "three fives". Children then chant the 九九 times-table rhyme, where 3 × 5 is 三五十五, "three five fifteen".</li>
+          <li><span class="zh">平均分</span> <b>Share evenly.</b> Division starts as sharing out one at a time until everyone has the same. On Hard, children use the times rhyme in reverse to find the answer.</li>
         </ul>
         <p><b>How tricky?</b> Easy uses small numbers and lots of dots to count. Medium covers numbers to 10 and adding to 18. Hard takes away the counting help, uses teen numbers, and makes children work out each step themselves. The level applies to every game and can be changed at any time.</p>
         <p>Stars are saved on this device only. There are no wrong-answer penalties: a wrong tap just fades that choice.</p>
@@ -363,7 +432,7 @@ if('speechSynthesis' in window){pickVoice();try{speechSynthesis.onvoiceschanged=
 const ONES=['zero','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen'];
 const TENS=['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
 const numWord=n=>n<20?ONES[n]:TENS[Math.floor(n/10)]+(n%10?'-'+ONES[n%10]:'');
-const speakable=t=>t.replace(/\d+/g,d=>+d<100?numWord(+d):d).replace(/\s*\.\.\.\s*/g,' ').replace(/\+/g,' plus ').replace(/=/g,' equals ');
+const speakable=t=>t.replace(/\d+/g,d=>+d<100?numWord(+d):d).replace(/\s*\.\.\.\s*/g,' ').replace(/\+/g,' plus ').replace(/−/g,' take away ').replace(/×/g,' times ').replace(/÷/g,' shared by ').replace(/=/g,' equals ');
 /* iOS only lets speech start inside a tap, so unlock it with a silent utterance on the first touch */
 if('speechSynthesis' in window)document.addEventListener('pointerdown',()=>{try{const u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u)}catch(e){}},{once:true});
 let sayTimer=null;
@@ -470,6 +539,38 @@ function fillEmpties(frame,color,numbers,done){
     if(i===empty.length-1&&done)fillTimers.push(setTimeout(done,300));
   },i*420)));
   if(!empty.length&&done)done();
+}
+
+const pl=(k,word)=>`${k} ${word}${k===1?'':'s'}`;
+/* Tap dots in a ten frame to cross them out; autoCross does the same on its own */
+function crossOut(frame,count,done){
+  let n=0;frame.classList.add('tap');
+  frame.onclick=e=>{
+    const c=e.target.closest('.cell.on:not(.out)');if(!c||n>=count)return;
+    c.classList.add('out');sfx.note(9-n);n++;
+    if(n===count){frame.classList.remove('tap');frame.onclick=null;done()}
+  };
+}
+function autoCross(frame,count,done){
+  [...frame.querySelectorAll('.cell.on:not(.out)')].reverse().slice(0,count).forEach((c,i)=>fillTimers.push(setTimeout(()=>{
+    c.classList.add('out');sfx.note(9-i);
+    if(i===count-1)fillTimers.push(setTimeout(done,400));
+  },i*380)));
+}
+function bondView(n,a,b,hide){
+  const ball=(pos,v,h)=>h?`<div class="ball ${pos} q" id="qBall"><b>?</b></div>`:`<div class="ball ${pos}"><b>${v}</b></div>`;
+  return `<div class="bond"><svg viewBox="0 0 340 260" preserveAspectRatio="none" aria-hidden="true"><line x1="170" y1="70" x2="70" y2="190"/><line x1="170" y1="70" x2="270" y2="190"/></svg>${ball('top',n,hide==='top')}${ball('left',a)}${ball('right',b,hide==='right')}</div>`;
+}
+function revealBall(v){const q=$('#qBall');q.classList.remove('q');q.classList.add('filled');q.innerHTML=`<b>${v}</b>`}
+function fillSum(v){const q=$('#sumQ');if(q){q.textContent=v;q.classList.add('ok')}}
+/* 九九 times-table rhyme line, e.g. 3 x 5 -> 三五十五 sān wǔ shí wǔ */
+const ZH='零一二三四五六七八九十'.split(''),ZPY=['líng','yī','èr','sān','sì','wǔ','liù','qī','bā','jiǔ','shí'];
+function rhyme(a,b){
+  if(a>9||b>9)return null;
+  if(a>b)[a,b]=[b,a];
+  const p=a*b,tail=p<10?['得',p]:p===10?[1,10]:p<20?[10,p-10]:[Math.floor(p/10),10].concat(p%10?[p%10]:[]);
+  const parts=[a,b,...tail];
+  return{zh:parts.map(x=>x==='得'?'得':ZH[x]).join(''),py:parts.map(x=>x==='得'?'dé':ZPY[x]).join(' ')};
 }
 
 /* ---------- games ---------- */
@@ -607,6 +708,124 @@ const GAMES={
       };
       help.onclick=()=>{const h=hint();$('#hintBox').outerHTML=`<p class="hint-box" id="hintBox">${h}</p>`;say(h)};
       answers.append(check,help);
+    }
+  },
+  take:{
+    title:'Take Away',han:'减法',py:'jiǎn fǎ',
+    tip:'Take away means some go away and we count what is left. On Hard, children use the Chinese trick 想加算减 (xiǎng jiā suàn jiǎn), "think adding to take away": for 8 − 3, think "3 and what make 8?"',
+    levels:{easy:'Easy: up to 5, tap the dots to take them away.',medium:'Medium: up to 10, tap the dots to take them away.',hard:'Hard: no dots. A number bond shows the adding fact that gives the answer.'},
+    round(){
+      const easy=level==='easy',hard=level==='hard';
+      const n=fresh(()=>easy?rand(2,5):rand(4,10)),b=rand(1,Math.min(n-1,easy?3:6)),left=n-b;
+      const line=`<div class="sum-line"><span class="r">${n}</span>−<span class="b">${b}</span>=<span class="q" id="sumQ">?</span></div>`;
+      const done=()=>{fillSum(left);say(`Yes! ${n} take away ${b} is ${left}.`)};
+      if(hard){
+        stage.innerHTML=line+bondView(n,b,left,'right');
+        setPrompt(`${n} − ${b}. Think: ${b} and what make ${n}?`,`${n} take away ${b}. Think of adding: ${b} and what make ${n}?`);
+        ask(choices(left,1,9),left,()=>{revealBall(left);done()});
+      }else{
+        stage.innerHTML=line+`<div class="frame" id="tFrame">${tf(n,'red',easy?5:10)}</div><p class="cap" id="tCap">Tap ${pl(b,'dot')} to take away</p>`;
+        answers.innerHTML='';
+        setPrompt(`${n} − ${b}. Tap ${pl(b,'dot')} to take away!`,`${n} take away ${b}. Tap ${pl(b,'dot')} to take away!`);
+        crossOut($('#tFrame'),b,()=>{
+          $('#tCap').textContent=`${left} left`;
+          setPrompt('How many dots are left?');
+          ask(choices(left,1,9),left,done);
+        });
+      }
+    }
+  },
+  breakten:{
+    title:'Break Ten',han:'破十法',py:'pò shí fǎ',
+    tip:'To work out 13 − 5 there are only 3 ones, so we break the ten instead: 10 − 5 = 5, then add the 3 ones back. 5 and 3 make 8. Chinese children learn this in Year 1, straight after Make Ten.',
+    levels:{easy:'Easy: 11 or 12, taking away up to 5.',medium:'Medium: any number from 11 to 18. Tap the dots in the full ten.',hard:'Hard: no tapping. Children work out each step: the ones, ten take away, then the total.'},
+    round(){
+      const easy=level==='easy',hard=level==='hard';
+      const o=fresh(()=>easy?rand(1,2):rand(1,8)),n=10+o,b=easy?rand(o+1,5):rand(o+1,9),fromTen=10-b,ans=fromTen+o;
+      stage.innerHTML=`<div class="sum-line"><span class="r">${n}</span>−<span class="b">${b}</span>=<span class="q" id="sumQ">?</span></div>
+        <p class="cap">${n} is a full ten and ${pl(o,'one')}</p>
+        <div class="frame" id="bTen">${tf(10,'red')}</div>
+        <div class="frame" id="bOnes">${tf(o,'gold')}</div>
+        <div id="splitBox"></div>`;
+      answers.innerHTML='';
+      const askTotal=()=>{
+        $('#splitBox').outerHTML=`<div class="split" id="splitBox"><span class="chip j">${fromTen}</span> and <span class="chip g">${o}</span> make ?</div>`;
+        setPrompt(`10 − ${b} = ${fromTen}. Now ${fromTen} and ${o} make ...?`,`Ten take away ${b} leaves ${fromTen}. Now add the ${pl(o,'one')} back. ${fromTen} and ${o} make how many?`);
+        ask(choices(ans,1,9),ans,()=>{fillSum(ans);say(`Yes! ${n} take away ${b} is ${ans}.`)});
+      };
+      if(hard){
+        setPrompt(`${n} − ${b}. First: ${n} is 10 and ...?`,`${n} take away ${b}. First, ${n} is ten and how many ones?`);
+        ask(choices(o,1,8),o,()=>fillTimers.push(setTimeout(()=>{
+          setPrompt(`There are only ${pl(o,'one')}, so take ${b} from the ten. 10 − ${b} = ...?`,`There are only ${pl(o,'one')}, so take ${b} from the ten. Ten take away ${b} is how many?`);
+          ask(choices(fromTen,1,9),fromTen,()=>{answers.innerHTML='';autoCross($('#bTen'),b,askTotal)},false);
+        },500)),false);
+      }else{
+        setPrompt(`${n} − ${b}. Take ${b} from the full ten. Tap ${pl(b,'red dot')}!`,`${n} take away ${b}. There are only ${pl(o,'one')}, so take ${b} from the full ten. Tap ${pl(b,'red dot')}!`);
+        crossOut($('#bTen'),b,()=>fillTimers.push(setTimeout(askTotal,400)));
+      }
+    }
+  },
+  groups:{
+    title:'Equal Groups',han:'几个几',py:'jǐ gè jǐ',
+    tip:'Multiplying is adding equal groups. In Chinese, 3 groups of 5 is "three fives" (三个五), and children chant the 九九 times-table rhyme: 三五十五, "three five fifteen". Tap each plate to count in groups.',
+    levels:{easy:'Easy: 2 on every plate, up to 5 plates.',medium:'Medium: 2, 5 or 10 on every plate.',hard:'Hard: any groups up to 5 × 5, written as a times sum. The plates stay hidden until "Show me".'},
+    round(){
+      let g=2,k=2;
+      fresh(()=>{g=rand(2,5);k=level==='easy'?2:level==='medium'?[2,5,10][rand(0,2)]:rand(2,5);return g*10+k});
+      const p=g*k,hard=level==='hard';
+      stage.innerHTML=(hard?`<div class="sum-line"><span class="r">${g}</span>×<span class="b">${k}</span>=<span class="q" id="sumQ">?</span></div>`:`<p class="ab-read">${g} plates, ${k} on each</p>`)
+        +`<div class="plates" id="plates"${hard?' hidden':''}>${Array.from({length:g},()=>`<button class="plate${k>5?' many':''}" aria-label="Plate of ${k}">${'<i></i>'.repeat(k)}</button>`).join('')}</div>`
+        +(hard?'<button class="show-me" id="showMe">Show me</button>':`<p class="cap">Tap each plate to count in ${k}s</p>`);
+      let total=0;
+      $('#plates').onclick=e=>{
+        const pt=e.target.closest('.plate');if(!pt||pt.classList.contains('counted'))return;
+        total+=k;pt.classList.add('counted');pt.insertAdjacentHTML('beforeend',`<span class="tally pop">${total}</span>`);
+        sfx.note(total/k);say(String(total));
+      };
+      if(hard)$('#showMe').onclick=e=>{e.target.remove();$('#plates').hidden=false;say('Tap each plate to count.')};
+      if(hard)setPrompt(`What is ${g} × ${k}?`,`What is ${g} times ${k}? That's ${g} groups of ${k}.`);
+      else setPrompt(`${g} plates with ${k} dumplings each. How many in all?`,`There are ${g} plates with ${k} dumplings on each. How many dumplings altogether?`);
+      ask(choices(p,2,50),p,()=>{
+        $('#plates').hidden=false;const sm=$('#showMe');if(sm)sm.remove();fillSum(p);
+        const r=rhyme(g,k);
+        stage.insertAdjacentHTML('beforeend',`<p class="say-line">${g} groups of ${k} make ${p}</p>`+(r?`<p class="rhyme"><span class="zh">${r.zh}</span>${r.py}</p>`:''));
+        say(`Yes! ${g} groups of ${k} make ${p}.`);
+      });
+    }
+  },
+  share:{
+    title:'Share Fairly',han:'平均分',py:'píng jūn fēn',
+    tip:'Dividing starts with sharing fairly, which Chinese classrooms call 平均分 (píng jūn fēn), "share out evenly". Give one peach to each panda in turn until none are left. Every panda must get the same.',
+    levels:{easy:'Easy: share up to 10 peaches between 2 pandas.',medium:'Medium: share up to 15 peaches between 2 or 3 pandas.',hard:'Hard: share up to 25 peaches between up to 5 pandas, worked out with the times rhyme. "Show me" shares them out.'},
+    round(){
+      let k=2,e=1;
+      fresh(()=>{k=level==='easy'?2:level==='medium'?rand(2,3):rand(2,5);e=level==='hard'?rand(2,5):rand(1,5);return k*10+e});
+      const total=k*e,hard=level==='hard';
+      stage.innerHTML=(hard?`<div class="sum-line"><span class="r">${total}</span>÷<span class="b">${k}</span>=<span class="q" id="sumQ">?</span></div>`:'')
+        +`<div class="pile${total>12?' small':''}${hard?' done':''}" id="pile">${`<button class="pdot peach" aria-label="Peach"${hard?' disabled':''}></button>`.repeat(total)}</div>`
+        +`<div class="pandas" id="pandas" style="grid-template-columns:repeat(${k},1fr)">${Array.from({length:k},()=>`<div class="pal">${PANDA}<div class="basket"></div><span class="cnt">0</span></div>`).join('')}</div>`
+        +(hard?'<button class="show-me" id="showMe">Show me</button>':'');
+      const pals=[...document.querySelectorAll('#pandas .pal')];let turn=0;
+      const mark=()=>pals.forEach((p,i)=>p.classList.toggle('turn',turn<total&&i===turn%k));
+      const give=d=>{
+        d.disabled=true;d.classList.add('gone');setTimeout(()=>d.remove(),260);
+        const p=pals[turn%k];p.querySelector('.basket').insertAdjacentHTML('beforeend','<i class="pop"></i>');
+        p.querySelector('.cnt').textContent=Math.floor(turn/k)+1;sfx.note(turn%k);turn++;mark();
+      };
+      const done=()=>{fillSum(e);stage.insertAdjacentHTML('beforeend',`<p class="say-line">${total} shared by ${k} is ${e} each</p>`);say(`Yes! ${total} shared between ${k} pandas is ${e} each.`)};
+      mark();
+      if(hard){
+        $('#showMe').onclick=ev=>{ev.target.remove();[...$('#pile').querySelectorAll('.pdot')].forEach((d,i)=>fillTimers.push(setTimeout(()=>give(d),i*260)))};
+        setPrompt(`Share ${total} peaches between ${k} pandas. How many each?`,`${total} peaches shared between ${k} pandas. How many does each panda get?`);
+        ask(choices(e,1,9),e,done);
+      }else{
+        answers.innerHTML='';
+        setPrompt(`Share ${total} peaches with ${k} pandas. Tap a peach to give it away!`,`Let's share ${total} peaches fairly between ${k} pandas. Tap a peach to give it to the next panda.`);
+        $('#pile').onclick=ev=>{
+          const d=ev.target.closest('.pdot');if(!d||d.disabled)return;give(d);
+          if(turn===total)fillTimers.push(setTimeout(()=>{setPrompt('All shared! How many does each panda get?');ask(choices(e,1,9),e,done)},500));
+        };
+      }
     }
   }
 };
