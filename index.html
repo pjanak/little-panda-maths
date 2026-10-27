@@ -338,18 +338,48 @@ function showStars(){starCount.textContent=stars}
 showStars();
 
 /* ---------- voice ---------- */
+/* Rank voices: British English first, then the higher-quality neural/enhanced voices, and never the novelty ones */
 let voice=null;
+function voiceScore(v){
+  const n=v.name.toLowerCase(),l=(v.lang||'').toLowerCase().replace('_','-');
+  if(!l.startsWith('en'))return -1;
+  if(/albert|bad news|bahh|bells|boing|bubbles|cellos|deranged|good news|grandma|grandpa|hysterical|jester|junior|organ|ralph|fred|superstar|trinoids|whisper|wobble|zarvox/.test(n))return -1;
+  let s=l==='en-gb'?30:/^en-(au|ie|nz)/.test(l)?20:10;
+  if(/natural|neural|premium|enhanced/.test(n))s+=40;
+  if(/google uk english female|sonia|libby|serena|kate|martha|stephanie|samantha|karen|moira|tessa|aria|jenny/.test(n))s+=20;
+  if(v.localService===false)s+=5;
+  return s;
+}
 function pickVoice(){
   try{
-    const vs=speechSynthesis.getVoices();
-    voice=vs.find(v=>/en-GB/i.test(v.lang)&&/female|serena|kate|martha|stephanie|google uk english female/i.test(v.name))
-      ||vs.find(v=>/en-GB/i.test(v.lang))||vs.find(v=>/^en/i.test(v.lang))||null;
+    let best=null,top=-1;
+    speechSynthesis.getVoices().forEach(v=>{const s=voiceScore(v);if(s>top){top=s;best=v}});
+    voice=best;
   }catch(e){}
 }
 if('speechSynthesis' in window){pickVoice();try{speechSynthesis.onvoiceschanged=pickVoice}catch(e){}}
+/* Speak numbers as words ("8" -> "eight") so the engine never reads them as digits or symbols */
+const ONES=['zero','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen'];
+const TENS=['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
+const numWord=n=>n<20?ONES[n]:TENS[Math.floor(n/10)]+(n%10?'-'+ONES[n%10]:'');
+const speakable=t=>t.replace(/\d+/g,d=>+d<100?numWord(+d):d).replace(/\s*\.\.\.\s*/g,' ').replace(/\+/g,' plus ').replace(/=/g,' equals ');
+/* iOS only lets speech start inside a tap, so unlock it with a silent utterance on the first touch */
+if('speechSynthesis' in window)document.addEventListener('pointerdown',()=>{try{const u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u)}catch(e){}},{once:true});
+let sayTimer=null;
 function say(t){
   if(!soundOn||!('speechSynthesis' in window))return;
-  try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);if(voice)u.voice=voice;u.rate=.9;u.pitch=1.15;speechSynthesis.speak(u)}catch(e){}
+  try{
+    clearTimeout(sayTimer);
+    const busy=speechSynthesis.speaking||speechSynthesis.pending;
+    speechSynthesis.cancel();
+    /* Speaking straight after cancel() clips the first word in Chrome and Safari, so wait a moment */
+    sayTimer=setTimeout(()=>{
+      const u=new SpeechSynthesisUtterance(speakable(t));
+      if(voice){u.voice=voice;u.lang=voice.lang}else u.lang='en-GB';
+      u.rate=.85;u.pitch=1.05;
+      speechSynthesis.speak(u);
+    },busy?220:80);
+  }catch(e){}
 }
 
 /* ---------- sound effects (Chinese pentatonic scale) ---------- */
