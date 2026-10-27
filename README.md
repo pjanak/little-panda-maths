@@ -30,6 +30,13 @@ Pick **Easy**, **Medium** or **Hard** on the home screen or inside any game. The
 
 Right answers earn stars and confetti, and every 5 stars brings up a celebration. Stars are saved in the browser's local storage.
 
+## Grown-up settings
+
+Open **Grown-up settings** at the bottom of the home screen:
+
+- **Play timer**: pick 5, 10, 15 or 20 minutes. A countdown shows in the top bar, turns red with a spoken warning at one minute, and then Bao says "Time's up!" and shows the stars earned in that session. Holding the button for 2 seconds adds 5 more minutes. The end time is saved, so reloading the page doesn't restart the clock.
+- **Reset stars**: sets the star count back to 0, after a confirmation step.
+
 ## Running it
 
 Live at **https://little-panda-maths.pages.dev** (Cloudflare Pages, redeploys on every push to `main`).

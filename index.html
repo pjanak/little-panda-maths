@@ -46,7 +46,10 @@ button:focus-visible,summary:focus-visible{outline:4px solid var(--plum);outline
 /* Top bar */
 .bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;align-items:center;gap:10px;padding-block:10px;background:var(--sky)}
 .brand{flex:1;display:flex;align-items:center;gap:8px;min-width:0;font-family:var(--display);font-weight:800;font-size:20px;line-height:1}
-.in-game .brand-name{display:none}
+.in-game .brand-name,.timing .brand-name{display:none}
+.timer-pill{display:flex;align-items:center;gap:4px;flex:none;background:var(--paper);color:var(--ink);border-radius:999px;padding:6px 11px 6px 8px;font-family:var(--display);font-weight:800;font-size:20px;line-height:1;font-variant-numeric:tabular-nums;box-shadow:0 4px 0 var(--blue-soft)}
+.timer-pill svg{width:22px;height:22px}
+.timer-pill.low{background:var(--red);color:var(--paper);box-shadow:0 4px 0 var(--red-deep);animation:bump 1s ease-in-out infinite}
 .brand svg{width:40px;height:40px;flex:none}
 .icon-btn{width:48px;height:48px;border-radius:50%;border:0;background:var(--paper);box-shadow:0 4px 0 var(--blue-soft);display:grid;place-items:center;flex:none}
 .icon-btn svg{width:26px;height:26px}
@@ -130,6 +133,19 @@ main{flex:1;padding-block:6px 40px}
 .grown ul{padding-left:20px;margin-top:0}
 .grown li{margin-bottom:8px}
 .grown .zh{font-family:var(--han);color:var(--red);font-weight:700}
+.set-group{display:flex;flex-direction:column;gap:8px;padding-bottom:14px}
+.set-group+.set-group{border-top:2px solid var(--sky);padding-top:14px}
+.set-group h4{margin:0;font-family:var(--display);font-weight:800;font-size:18px;color:var(--ink)}
+.set-note{margin:0;font-size:16px}
+.chips{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.chip-btn{border:0;border-radius:999px;padding:9px 16px;background:var(--sky);color:var(--ink);font-family:var(--display);font-weight:800;font-size:17px;line-height:1}
+.chip-btn[aria-pressed="true"]{background:var(--plum);color:var(--paper)}
+.chip-btn.danger{background:var(--red);color:var(--paper)}
+.chip-btn:disabled{opacity:.4;cursor:default}
+.cheer-card .hold{position:relative;overflow:hidden;margin-top:12px;height:58px;background:var(--sky);box-shadow:0 5px 0 var(--blue-soft);font-size:17px;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.cheer-card .hold::before{content:"";position:absolute;inset:0 auto 0 0;width:0;background:var(--jade-soft)}
+.cheer-card .hold.holding::before{width:100%;transition:width 2s linear}
+.cheer-card .hold span{position:relative}
 
 /* Game */
 .game-head{display:flex;align-items:center;gap:10px}
@@ -267,6 +283,10 @@ main{flex:1;padding-block:6px 40px}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
     </button>
     <div class="brand"><span data-panda></span><span class="brand-name">Little Panda Maths</span></div>
+    <div class="timer-pill" id="timerPill" aria-label="Play time left" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 10v3.5l2.5 1.5M9.5 2.5h5"/></svg>
+      <span id="timerText">0:00</span>
+    </div>
     <div class="stars" id="starBox" aria-label="Stars earned">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path class="pk" d="M12 2.5l2.9 6 6.6.8-4.9 4.6 1.3 6.6L12 17.2l-5.9 3.3 1.3-6.6L2.5 9.3l6.6-.8z"/></svg>
       <span id="starCount">0</span>
@@ -348,6 +368,28 @@ main{flex:1;padding-block:6px 40px}
         </button>
       </div>
 
+      <details class="grown" id="settings">
+        <summary>Grown-up settings: play timer and stars</summary>
+        <div class="set-group">
+          <h4>Play timer</h4>
+          <p class="set-note">Pick how long to play. A countdown shows at the top, and Bao says when time is up.</p>
+          <div class="chips" id="timerChips" role="group" aria-label="Play time">
+            <button class="chip-btn" data-min="0" aria-pressed="true">Off</button>
+            <button class="chip-btn" data-min="5" aria-pressed="false">5 min</button>
+            <button class="chip-btn" data-min="10" aria-pressed="false">10 min</button>
+            <button class="chip-btn" data-min="15" aria-pressed="false">15 min</button>
+            <button class="chip-btn" data-min="20" aria-pressed="false">20 min</button>
+          </div>
+          <p class="set-note" id="timerStatus" hidden></p>
+        </div>
+        <div class="set-group">
+          <h4>Stars</h4>
+          <p class="set-note" id="starNote">No stars yet.</p>
+          <div class="chips" id="resetRow"><button class="chip-btn danger" id="resetBtn">Reset stars to 0</button></div>
+          <div class="chips" id="confirmRow" hidden><span class="set-note" id="confirmText"></span><button class="chip-btn danger" id="resetYes">Yes, reset</button><button class="chip-btn" id="resetNo">Cancel</button></div>
+        </div>
+      </details>
+
       <details class="grown">
         <summary>For grown-ups: the Chinese methods</summary>
         <p>Children in Chinese Year 1 classrooms build mental maths on a few clear ideas. Each game here practises one of them. Tap the green speaker to hear any question read aloud.</p>
@@ -390,6 +432,15 @@ main{flex:1;padding-block:6px 40px}
     <button id="cheerBtn">Keep going</button>
   </div>
 </div>
+<div class="cheer" id="timesUp" hidden>
+  <div class="cheer-card" role="dialog" aria-labelledby="tuTitle">
+    <span data-panda></span>
+    <h2 id="tuTitle">Time's up!</h2>
+    <p id="tuText"></p>
+    <button id="tuDone">All done</button>
+    <button class="hold" id="tuMore"><span>Grown-ups: hold for 5 more minutes</span></button>
+  </div>
+</div>
 <canvas id="confetti" aria-hidden="true"></canvas>
 
 <script>
@@ -404,7 +455,11 @@ try{stars=parseInt(localStorage.getItem('lpm-stars'),10)||0}catch(e){}
 try{const l=localStorage.getItem('lpm-level');if(['easy','medium','hard'].includes(l))level=l}catch(e){}
 try{soundOn=localStorage.getItem('lpm-sound')!=='off'}catch(e){}
 const starCount=$('#starCount'), starBox=$('#starBox');
-function showStars(){starCount.textContent=stars}
+function showStars(){
+  starCount.textContent=stars;
+  const note=document.getElementById('starNote');if(note)note.textContent=stars?`Stars earned so far: ${stars}.`:'No stars yet.';
+  const rb=document.getElementById('resetBtn');if(rb)rb.disabled=!stars;
+}
 showStars();
 
 /* ---------- voice ---------- */
@@ -858,6 +913,7 @@ $('#pandaBtn').onclick=e=>{const b=e.currentTarget;b.classList.remove('wiggle');
 
 /* ---------- cheer + confetti ---------- */
 function showCheer(){
+  if(!$('#timesUp').hidden)return;
   $('#cheerText').textContent=`You have ${stars} stars! Bao is so proud of you.`;
   $('#cheer').hidden=false;burst(160);say(`Super star! You have ${stars} stars!`);
 }
@@ -879,6 +935,67 @@ function tick(){
   parts.forEach(p=>{p.life++;p.vy+=.38;p.vx*=.99;p.x+=p.vx;p.y+=p.vy;p.rot+=p.vr;cx.save();cx.translate(p.x,p.y);cx.rotate(p.rot);cx.fillStyle=p.c;if(p.round){cx.beginPath();cx.arc(0,0,p.r/2,0,7);cx.fill()}else cx.fillRect(-p.r/2,-p.r/4,p.r,p.r/2);cx.restore()});
   if(parts.length)requestAnimationFrame(tick);else{running=false;cx.clearRect(0,0,innerWidth,innerHeight)}
 }
+
+/* ---------- reset stars ---------- */
+const resetRow=$('#resetRow'),confirmRow=$('#confirmRow');
+$('#resetBtn').onclick=()=>{sfx.click();$('#confirmText').textContent=`Reset all ${pl(stars,'star')} to 0?`;resetRow.hidden=true;confirmRow.hidden=false};
+$('#resetNo').onclick=()=>{sfx.click();confirmRow.hidden=true;resetRow.hidden=false};
+$('#resetYes').onclick=()=>{
+  stars=0;try{localStorage.setItem('lpm-stars','0')}catch(e){}
+  if(timer.end){timer.base=0;saveTimer()}
+  showStars();sfx.click();confirmRow.hidden=true;resetRow.hidden=false;say('Stars reset. Time for a fresh start!');
+};
+showStars();
+
+/* ---------- play timer ---------- */
+/* The end time is saved, so reloading the page doesn't restart the countdown */
+const timerPill=$('#timerPill'),timerText=$('#timerText'),timesUpBox=$('#timesUp');
+let timer={end:0,base:0,min:0,warned:false},ticker=null,lastBase=0;
+try{const t=JSON.parse(localStorage.getItem('lpm-timer')||'null');if(t&&t.end>Date.now())timer=t}catch(e){}
+function saveTimer(){try{if(timer.end)localStorage.setItem('lpm-timer',JSON.stringify(timer));else localStorage.removeItem('lpm-timer')}catch(e){}}
+const clock=ms=>{const s=Math.max(0,Math.ceil(ms/1000));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
+function setTimer(min,base){
+  timer=min?{end:Date.now()+min*60000,base:base??stars,min,warned:false}:{end:0,base:0,min:0,warned:false};
+  saveTimer();renderTimer();
+}
+function renderTimer(){
+  const on=timer.end>0;
+  timerPill.hidden=!on;document.body.classList.toggle('timing',on);
+  document.querySelectorAll('#timerChips .chip-btn').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.min===(on?timer.min:0))));
+  $('#timerStatus').hidden=!on;
+  clearInterval(ticker);
+  if(on){updateTimer();ticker=setInterval(updateTimer,1000)}
+}
+function updateTimer(){
+  const left=timer.end-Date.now();
+  timerText.textContent=clock(left);
+  timerPill.setAttribute('aria-label',`Play time left: ${clock(left)}`);
+  $('#timerStatus').textContent=`${clock(left)} left. Play ends at ${new Date(timer.end).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}.`;
+  timerPill.classList.toggle('low',left<=60000);
+  if(left>0&&left<=60000&&!timer.warned){timer.warned=true;saveTimer();say('One minute left!')}
+  if(left<=0)timesUp();
+}
+function timesUp(){
+  const earned=Math.max(0,stars-timer.base);
+  lastBase=timer.base;setTimer(0);stopFill();
+  $('#tuText').textContent=earned?`You earned ${pl(earned,'star')} this time. Great work!`:'Great practising today!';
+  $('#cheer').hidden=true;timesUpBox.hidden=false;burst(120);
+  say(`Time's up! ${earned?`You earned ${pl(earned,'star')}. `:''}Well done!`);
+}
+document.querySelectorAll('#timerChips .chip-btn').forEach(b=>b.onclick=()=>{
+  const min=+b.dataset.min;sfx.click();setTimer(min);
+  say(min?`Timer set for ${min} minutes. Have fun!`:'Timer off.');
+});
+$('#tuDone').onclick=()=>{sfx.click();timesUpBox.hidden=true;if(!game.hidden)homeBtn.click()};
+/* Holding for 2 seconds keeps a quick tap from a child from adding time */
+const more=$('#tuMore');let holdT=null;
+more.addEventListener('pointerdown',e=>{
+  e.preventDefault();more.classList.add('holding');
+  holdT=setTimeout(()=>{more.classList.remove('holding');timesUpBox.hidden=true;setTimer(5,lastBase);sfx.yay();say('Five more minutes!')},2000);
+});
+['pointerup','pointerleave','pointercancel'].forEach(ev=>more.addEventListener(ev,()=>{clearTimeout(holdT);more.classList.remove('holding')}));
+more.addEventListener('contextmenu',e=>e.preventDefault());
+renderTimer();
 })();
 </script>
 </body>
